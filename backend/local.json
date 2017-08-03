@@ -1,6 +1,8 @@
 {
 	"twitter_consumer_key": "",
 	"twitter_consumer_secret": "",
-	"twitter_access_key": "ff",
-	"twitter_access_secret": ""
+	"twitter_access_key": "",
+	"twitter_access_secret": "",
+	"iot_hub_connection_string": "",
+	"sentiment140_appid": ""
 }
