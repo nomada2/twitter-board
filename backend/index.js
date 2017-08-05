@@ -8,46 +8,41 @@ const twitterClient = new Twitter({
   access_token_secret: config.twitter_access_secret
 });
 const clientFromConnectionString = require('azure-iot-device-amqp').clientFromConnectionString;
+const Message = require('azure-iot-device').Message;
+const iotHubConnectionString = config.iot_hub_connection_string;
+const iotClient = clientFromConnectionString(iotHubConnectionString);
 
 const searchTerms = 'javascript';
- 
-function isRetweet(event) {
-    return (event.text != undefined) && (event.text.substring(0,2) === 'RT');
-}
 
-var iotHubConnectionString = config.iot_hub_connection_string;
+iotClient.open(iotConnectCallback);
 
-// AMQP-specific factory function returns Client object from core package
-var iotClient = clientFromConnectionString(iotHubConnectionString);
-
-// use Message object from core package
-var Message = require('azure-iot-device').Message;
-
-var connectCallback = function (err) {
+function iotConnectCallback (err) {
   if (err) {
     console.error('Could not connect to IoT Hub: ' + err);
   } else {
     console.log('Client connected to IoT Hub');
+    streamTweets();
+  };
+};
 
+function streamTweets() {
     var tweetStream = twitterClient.stream('statuses/filter', {track: searchTerms, language: 'en'});
     tweetStream.on('data', function(event) {
-        
         if (!isRetweet(event)) {
             console.log('Tweet found');
             getSentiment(event);
         }
-    
     });
     
     tweetStream.on('error', function(error) {
         console.log('Twitter api error: ', error);
     });
+}
 
-    
-  };
-};
+function isRetweet(event) {
+    return (event.text != undefined) && (event.text.substring(0,2) === 'RT');
+}
 
-iotClient.open(connectCallback);
 
 function getSentiment(tweet) {
         const text = encodeURIComponent(tweet.text);
@@ -62,26 +57,30 @@ function getSentiment(tweet) {
 
         request(options, function(err, resp, body) {
                 if ((!err && resp.statusCode == 200 && body.results !== undefined)) {
-                    var result = {
+                    var message = {
                         id: tweet.id,
                         createdAt: tweet.created_at,
                         text: tweet.text,
                         author: tweet.user.name,
                         lang: tweet.lang,
-                        sentimentScore: body.results.polarity 
+                        sentiment140Score: body.results.polarity 
                     };
 
-                    var iotMessage = new Message(JSON.stringify(result));
-                    iotClient.sendEvent(iotMessage, function (err) {
-                        if (err) {
-                            console.log('Error sending message to IoT Hub', err);
-                        } else {
-                            console.log('Message sent to IoT Hub');
-                        };
-                    });
+                    sendIoTMessage(message);
 
                 } else {
-                        console.log('Sentiment API error: ', err);
+                    console.log('Sentiment API error: ', err);
                 }
         });
+}
+
+function sendIoTMessage(message) {
+    var iotMessage = new Message(JSON.stringify(message));
+    iotClient.sendEvent(iotMessage, function (err) {
+        if (err) {
+            console.log('Error sending message to IoT Hub', err);
+        } else {
+            console.log('Message sent to IoT Hub');
+        };
+    });
 }
