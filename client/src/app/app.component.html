@@ -1,0 +1,18 @@
+<input #term type="text" (change)="onInputChange(term.value)" />
+
+
+<table>
+  <tr>
+      <th style="width: 75%">Tweet</th>
+      <th style="width: 25%">Sentiment</th>
+  </tr>
+  <tr *ngFor="let message of messages">
+    <td style="width: 75%">{{message.text}}</td>
+    <td style="width: 75%" [ngSwitch]="message.sentimentScore">
+      <ng-template ngSwitchCase="0">Negative</ng-template>
+      <ng-template ngSwitchCase="2">Neutral</ng-template>
+      <ng-template ngSwitchCase="4">Positive</ng-template>
+      <ng-template ngSwitchDefault>Unknown</ng-template>
+    </td>
+  </tr>
+</table>

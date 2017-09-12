@@ -39,17 +39,20 @@ wss.on('connection', function connection(socket, request) {
   console.log(`connected clients: ${wss.clients.size}`);
   
   socket.on('message', function incoming(terms) {
-    console.log(`received from ${clientIp}: ${terms}`);
+    let input = JSON.parse(terms);
+    console.log(`received from ${clientIp}: ${input}`);
     if (tweetStream) {
         tweetStream.destroy();
     }
-    tweetStream = startTweetStream(terms, socket);
+    tweetStream = startTweetStream(input, socket);
   });
 
   socket.on('close', function close(code, reason) {
     console.log(`connection ${clientIp} closed (code ${code})`);
     console.log(`connected clients: ${wss.clients.size}`);
-    tweetStream.destroy();
+    if (tweetStream) {
+        tweetStream.destroy();
+    }
   });
 });
 
@@ -68,7 +71,7 @@ function startTweetStream(searchTerms, wsSocket) {
                         }
                     });
                 }
-                sendIoTMessage(data);
+                // sendIoTMessage(data);
             });
         }
     });
@@ -122,7 +125,7 @@ const iotConnectCallback = function (err) {
     };
   };
   
-iotClient.open(iotConnectCallback);
+// iotClient.open(iotConnectCallback);
 
 function sendIoTMessage(payload) {
     const iotMessage = new IoTMessage(JSON.stringify(payload));
