@@ -5,12 +5,15 @@
   "author": "Andrei Matracaru",
   "license": "MIT",
   "scripts": {
-    "start": "node index"
+    "start": "node server",
+    "start-client": "node test-client"
   },
   "dependencies": {
-    "azure-iot-device": "^1.1.16",
+    "azure-iot-device": "^1.1.17",
     "azure-iot-device-amqp": "^1.1.16",
     "request": "^2.81.0",
-    "twitter": "^1.7.1"
+    "request-promise": "^4.2.1",
+    "twitter": "^1.7.1",
+    "ws": "^3.1.0"
   }
 }
