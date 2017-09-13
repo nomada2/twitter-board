@@ -1,5 +1,7 @@
 <input #term type="text" (change)="onInputChange(term.value)" />
 
+<chart [options]="options" (load)="saveInstance($event.context)">
+</chart>
 
 <table>
   <tr>
